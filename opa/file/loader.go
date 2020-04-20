@@ -10,8 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/open-policy-agent/golang-opa-wasm/opa"
 	"github.com/open-policy-agent/opa/bundle"
+
+	"github.com/open-policy-agent/golang-opa-wasm/opa"
 )
 
 const (
