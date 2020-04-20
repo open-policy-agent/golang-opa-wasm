@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package opa
 
 // #include <stdlib.h>
@@ -54,28 +55,28 @@ func opa_abort(ctx unsafe.Pointer, addr int32) {
 }
 
 //export opa_builtin0
-func opa_builtin0(ctx unsafe.Pointer, builtinId, context int32) int32 {
-	return getVM(ctx).Builtin(builtinId, context)
+func opa_builtin0(ctx unsafe.Pointer, builtinID, context int32) int32 {
+	return getVM(ctx).Builtin(builtinID, context)
 }
 
 //export opa_builtin1
-func opa_builtin1(ctx unsafe.Pointer, builtinId, context, arg0 int32) int32 {
-	return getVM(ctx).Builtin(builtinId, context, arg0)
+func opa_builtin1(ctx unsafe.Pointer, builtinID, context, arg0 int32) int32 {
+	return getVM(ctx).Builtin(builtinID, context, arg0)
 }
 
 //export opa_builtin2
-func opa_builtin2(ctx unsafe.Pointer, builtinId, context, arg0, arg1 int32) int32 {
-	return getVM(ctx).Builtin(builtinId, context, arg0, arg1)
+func opa_builtin2(ctx unsafe.Pointer, builtinID, context, arg0, arg1 int32) int32 {
+	return getVM(ctx).Builtin(builtinID, context, arg0, arg1)
 }
 
 //export opa_builtin3
-func opa_builtin3(ctx unsafe.Pointer, builtinId, context, arg0, arg1, arg2 int32) int32 {
-	return getVM(ctx).Builtin(builtinId, context, arg0, arg1, arg2)
+func opa_builtin3(ctx unsafe.Pointer, builtinID, context, arg0, arg1, arg2 int32) int32 {
+	return getVM(ctx).Builtin(builtinID, context, arg0, arg1, arg2)
 }
 
 //export opa_builtin4
-func opa_builtin4(ctx unsafe.Pointer, builtinId, context, arg0, arg1, arg2, arg3 int32) int32 {
-	return getVM(ctx).Builtin(builtinId, context, arg0, arg1, arg2, arg3)
+func opa_builtin4(ctx unsafe.Pointer, builtinID, context, arg0, arg1, arg2, arg3 int32) int32 {
+	return getVM(ctx).Builtin(builtinID, context, arg0, arg1, arg2, arg3)
 }
 
 func getVM(ctx unsafe.Pointer) *vm {

@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package opa
 
 import (
@@ -29,7 +30,7 @@ func (o *OPA) WithPolicyBytes(policy []byte) *OPA {
 	return o
 }
 
-// WithDataBytes configures the JSON data file to load.
+// WithDataFile configures the JSON data file to load.
 func (o *OPA) WithDataFile(fileName string) *OPA {
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {

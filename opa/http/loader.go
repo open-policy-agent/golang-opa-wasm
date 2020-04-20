@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package http
 
 import (
@@ -88,7 +89,7 @@ func (l *Loader) Init() (*Loader, error) {
 	return l, nil
 }
 
-// Starts starts the periodic downloads, blocking until the first
+// Start starts the periodic downloads, blocking until the first
 // successful download.  If cancelled, will return context.Cancelled.
 func (l *Loader) Start(ctx context.Context) error {
 	if !l.initialized {

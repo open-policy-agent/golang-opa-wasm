@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package opa
 
 import (
@@ -256,7 +257,7 @@ func (i *vm) Abort(arg int32) {
 }
 
 // Builtin executes a builtin for the policy.
-func (i *vm) Builtin(builtinId, ctx int32, args ...int32) int32 {
+func (i *vm) Builtin(builtinID, ctx int32, args ...int32) int32 {
 	// TODO: Returning proper errors instead of panicing.
 	// TODO: To avoid growing the heap with every built-in call, recycle the JSON buffers since the free implementation is no-op.
 
@@ -288,7 +289,7 @@ func (i *vm) Builtin(builtinId, ctx int32, args ...int32) int32 {
 		}
 	}
 
-	i.builtins[builtinId](*i.bctx, convertedArgs, i.iter)
+	i.builtins[builtinID](*i.bctx, convertedArgs, i.iter)
 
 	result, err := ast.JSON(i.builtinResult.Value)
 	if err != nil {
