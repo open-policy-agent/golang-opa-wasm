@@ -1,0 +1,17 @@
+name: Check PR
+
+on:
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+  push:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Execute tests
+      run: make all
