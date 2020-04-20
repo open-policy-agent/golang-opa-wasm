@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package opa
 
 import (
@@ -191,7 +192,7 @@ func (p *pool) setPolicyData(policy []byte, data []byte) error {
 
 // Close waits for all the evaluations to finish and then releases the VMs.
 func (p *pool) Close() {
-	for _ = range p.vms {
+	for range p.vms {
 		<-p.available
 	}
 

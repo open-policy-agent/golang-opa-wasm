@@ -1,6 +1,7 @@
 // Copyright 2020 The OPA Authors.  All rights reserved.
 // Use of this source code is governed by an Apache2
 // license that can be found in the LICENSE file.
+
 package file
 
 import (
@@ -76,14 +77,14 @@ type testPolicyData struct {
 	updated chan struct{}
 }
 
-func (t *testPolicyData) SetPolicyData(policy []byte, data *interface{}) error {
-	t.Lock()
-	defer t.Unlock()
+func (pd *testPolicyData) SetPolicyData(policy []byte, data *interface{}) error {
+	pd.Lock()
+	defer pd.Unlock()
 
-	t.policy = policy
-	t.data = data
-	if t.updated != nil {
-		close(t.updated)
+	pd.policy = policy
+	pd.data = data
+	if pd.updated != nil {
+		close(pd.updated)
 	}
 
 	return nil
@@ -98,16 +99,16 @@ func (pd *testPolicyData) CheckEqual(t *testing.T, policy string, data *interfac
 	}
 }
 
-func (t *testPolicyData) WaitUpdate() {
-	t.Lock()
-	t.updated = make(chan struct{})
-	t.Unlock()
+func (pd *testPolicyData) WaitUpdate() {
+	pd.Lock()
+	pd.updated = make(chan struct{})
+	pd.Unlock()
 
-	<-t.updated
+	<-pd.updated
 
-	t.Lock()
-	t.updated = nil
-	t.Unlock()
+	pd.Lock()
+	pd.updated = nil
+	pd.Unlock()
 }
 
 func writeBundle(name string, policy string, data interface{}) {
