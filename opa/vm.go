@@ -29,7 +29,6 @@ type vm struct {
 	builtins         map[int32]topdown.BuiltinFunc
 	builtinResult    *ast.Term
 	baseHeapPtr      int32
-	baseHeapTop      int32
 	dataAddr         int32
 	evalHeapPtr      int32
 	evalHeapTop      int32
@@ -99,7 +98,7 @@ func newVM(policy []byte, data []byte, memoryMin, memoryMax uint32) (*vm, error)
 		return nil, err
 	}
 
-	if v.baseHeapPtr, v.baseHeapTop, err = v.getHeapState(); err != nil {
+	if v.baseHeapPtr, err = v.getHeapState(); err != nil {
 		return nil, err
 	}
 
@@ -109,7 +108,7 @@ func newVM(policy []byte, data []byte, memoryMin, memoryMax uint32) (*vm, error)
 		}
 	}
 
-	if v.evalHeapPtr, v.evalHeapTop, err = v.getHeapState(); err != nil {
+	if v.evalHeapPtr, err = v.getHeapState(); err != nil {
 		return nil, err
 	}
 
@@ -146,7 +145,7 @@ func newVM(policy []byte, data []byte, memoryMin, memoryMax uint32) (*vm, error)
 }
 
 func (i *vm) Eval(ctx context.Context, input *interface{}) (interface{}, error) {
-	if err := i.setHeapState(i.evalHeapPtr, i.evalHeapTop); err != nil {
+	if err := i.setHeapState(i.evalHeapPtr); err != nil {
 		return nil, err
 	}
 
@@ -222,7 +221,7 @@ func (i *vm) SetPolicyData(policy []byte, data []byte) error {
 	i.dataAddr = 0
 
 	var err error
-	if err = i.setHeapState(i.baseHeapPtr, i.baseHeapTop); err != nil {
+	if err = i.setHeapState(i.baseHeapPtr); err != nil {
 		return err
 	}
 
@@ -232,7 +231,7 @@ func (i *vm) SetPolicyData(policy []byte, data []byte) error {
 		}
 	}
 
-	if i.evalHeapPtr, i.evalHeapTop, err = i.getHeapState(); err != nil {
+	if i.evalHeapPtr, err = i.getHeapState(); err != nil {
 		return err
 	}
 
@@ -375,25 +374,16 @@ func (i *vm) toRegoJSON(v interface{}, free bool) (int32, error) {
 	return addr.ToI32(), nil
 }
 
-func (i *vm) getHeapState() (int32, int32, error) {
+func (i *vm) getHeapState() (int32, error) {
 	ptr, err := i.heapPtrGet()
 	if err != nil {
-		return 0, 0, err
+		return 0, err
 	}
 
-	top, err := i.heapTopGet()
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return ptr.ToI32(), top.ToI32(), nil
+	return ptr.ToI32(), nil
 }
 
-func (i *vm) setHeapState(ptr, top int32) error {
-	if _, err := i.heapPtrSet(ptr); err != nil {
-		return err
-	}
-
-	_, err := i.heapTopSet(top)
+func (i *vm) setHeapState(ptr int32) error {
+	_, err := i.heapPtrSet(ptr)
 	return err
 }
