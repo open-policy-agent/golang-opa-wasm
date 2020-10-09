@@ -10,8 +10,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/metrics"
 	"github.com/open-policy-agent/opa/topdown"
 	"github.com/open-policy-agent/opa/topdown/builtins"
 	wasm "github.com/wasmerio/go-ext-wasm/wasmer"
@@ -25,7 +28,6 @@ type vm struct {
 	memoryMin        uint32
 	memoryMax        uint32
 	bctx             *topdown.BuiltinContext
-	internalError    string
 	builtins         map[int32]topdown.BuiltinFunc
 	builtinResult    *ast.Term
 	baseHeapPtr      int32
@@ -150,7 +152,6 @@ func (i *vm) Eval(ctx context.Context, input *interface{}) (interface{}, error) 
 	}
 
 	defer func() {
-		i.internalError = ""
 		i.bctx = nil
 	}()
 
@@ -181,13 +182,25 @@ func (i *vm) Eval(ctx context.Context, input *interface{}) (interface{}, error) 
 	}
 
 	// Evaluate the policy.
+	func() {
+		defer func() {
+			if e := recover(); e != nil {
+				switch e := e.(type) {
+				case abortError:
+					err = errors.New(e.message)
+				case builtinError:
+					err = e.err
+				default:
+					panic(e)
+				}
 
-	if _, err := i.eval(ctxAddr); err != nil {
+			}
+		}()
+		_, err = i.eval(ctxAddr)
+	}()
+
+	if err != nil {
 		return nil, err
-	}
-
-	if i.internalError != "" {
-		return nil, errors.New(i.internalError)
 	}
 
 	resultAddr, err := i.evalCtxGetResult(ctxAddr)
@@ -243,6 +256,10 @@ func (i *vm) Close() {
 	i.instance.Close()
 }
 
+type abortError struct {
+	message string
+}
+
 // Abort is invoked by the policy if an internal error occurs during
 // the policy execution.
 func (i *vm) Abort(arg int32) {
@@ -252,11 +269,16 @@ func (i *vm) Abort(arg int32) {
 		panic("invalid abort argument")
 	}
 
-	i.internalError = string(data[0:n])
+	panic(abortError{message: string(data[0:n])})
+}
+
+type builtinError struct {
+	err error
 }
 
 // Builtin executes a builtin for the policy.
 func (i *vm) Builtin(builtinID, ctx int32, args ...int32) int32 {
+
 	// TODO: Returning proper errors instead of panicing.
 	// TODO: To avoid growing the heap with every built-in call, recycle the JSON buffers since the free implementation is no-op.
 
@@ -264,12 +286,12 @@ func (i *vm) Builtin(builtinID, ctx int32, args ...int32) int32 {
 	for j, arg := range args {
 		x, err := i.fromRegoJSON(arg, true)
 		if err != nil {
-			panic(err)
+			panic(builtinError{err: err})
 		}
 
 		y, err := ast.InterfaceToValue(x)
 		if err != nil {
-			panic(err)
+			panic(builtinError{err: err})
 		}
 
 		convertedArgs[j] = ast.NewTerm(y)
@@ -280,6 +302,8 @@ func (i *vm) Builtin(builtinID, ctx int32, args ...int32) int32 {
 			Context:  context.Background(),
 			Cancel:   nil,
 			Runtime:  nil,
+			Time:     ast.NumberTerm(json.Number(strconv.FormatInt(time.Now().UnixNano(), 10))),
+			Metrics:  metrics.New(),
 			Cache:    make(builtins.Cache),
 			Location: nil,
 			Tracers:  nil,
@@ -288,16 +312,19 @@ func (i *vm) Builtin(builtinID, ctx int32, args ...int32) int32 {
 		}
 	}
 
-	i.builtins[builtinID](*i.bctx, convertedArgs, i.iter)
+	err := i.builtins[builtinID](*i.bctx, convertedArgs, i.iter)
+	if err != nil {
+		panic(builtinError{err: err})
+	}
 
 	result, err := ast.JSON(i.builtinResult.Value)
 	if err != nil {
-		panic(err)
+		panic(builtinError{err: err})
 	}
 
 	addr, err := i.toRegoJSON(result, true)
 	if err != nil {
-		panic(err)
+		panic(builtinError{err: err})
 	}
 
 	return addr
