@@ -39,7 +39,7 @@ func New() *OPA {
 	opa := &OPA{
 		memoryMinPages: 2,
 		memoryMaxPages: 0,
-		poolSize:       uint32(runtime.NumCPU()),
+		poolSize:       uint32(runtime.GOMAXPROCS(0)),
 		logError:       func(error) {},
 	}
 
