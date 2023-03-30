@@ -1,4 +1,6 @@
-**Work in Progress -- Contributions welcome!** 
+:warning: **Note:** This SDK has been moved into the main OPA repo and can be found [here](https://github.com/open-policy-agent/opa/tree/main/internal/wasm/sdk).
+
+---
 
 # Open Policy Agent WebAssemby Go SDK
 This is the source for the Open Policy Agent WebAssembly Go SDK which
